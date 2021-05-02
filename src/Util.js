@@ -363,10 +363,13 @@ class Util {
         const emptyProgress = size - progress;
 
         const progressText = blockIcon.repeat(progress) + arrowIcon;
-        if(isEmbed) const emptyProgressText = blockIcon.repeat(emptyProgress);
-        else const emptyProgressText = ' '.repeat(emptyProgress);
-
-        return `[${progressText}${emptyProgressText}][${this.MillisecondsToTime(value)}/${this.MillisecondsToTime(maxValue)}]`;
+        if(isEmbed) {
+            const emptyProgressText = blockIcon.repeat(emptyProgress);
+            return `[${progressText}${emptyProgressText}][${this.MillisecondsToTime(value)}/${this.MillisecondsToTime(maxValue)}]`;
+        } else {
+            const emptyProgressText = ' '.repeat(emptyProgress);
+            return `[${progressText}${emptyProgressText}][${this.MillisecondsToTime(value)}/${this.MillisecondsToTime(maxValue)}]`;
+        }
     };
 
     /**
