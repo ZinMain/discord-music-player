@@ -120,6 +120,7 @@ class Util {
         size: 20,
         arrow: '>',
         block: '=',
+        embed: false
     };
 
     /**
@@ -351,17 +352,21 @@ class Util {
      * @param {Number} value - The value to fill the bar
      * @param {Number} maxValue - The max value of the bar
      * @param {Number} size - The bar size (in letters)
-     * @param {String} loadedIcon - Loaded Icon
+     * @param {String} blockIcon - Block Icon
      * @param {String} arrowIcon - Arrow Icon
      * @return {String} - Music Bar
      */
-    static buildBar(value, maxValue, size, loadedIcon, arrowIcon) {
+    static buildBar(value, maxValue, size, blockIcon, arrowIcon, isEmbed) {
         const percentage = value / maxValue;
         const progress = Math.round((size * percentage));
         const emptyProgress = size - progress;
 
-        const progressText = loadedIcon.repeat(progress) + arrowIcon;
-        const emptyProgressText = ' '.repeat(emptyProgress);
+        const progressText = blockIcon.repeat(progress) + arrowIcon;
+        if(isEmbed){
+            const emptyProgressText = blockIcon.repeat(emptyProgress);
+        } else {
+            const emptyProgressText = ' '.repeat(emptyProgress);
+        }
 
         return `[${progressText}${emptyProgressText}][${this.MillisecondsToTime(value)}/${this.MillisecondsToTime(maxValue)}]`;
     };

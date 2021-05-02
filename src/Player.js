@@ -193,6 +193,116 @@ class Player extends EventEmitter {
 
 
     /**
+     * Move a song.
+     * @param {Discord.Message} message The Discord Message object.
+     * @param {Number} song want to be moved.
+     * @param {Number} song destination.
+     * @returns {song}
+     */
+    async move(message, from, to) {
+        // Gets guild queue
+        let queue = this.queues.get(message.guild.id);
+        if (!queue)
+        {
+            this.emit('error', message, 'QueueIsNull');
+            return null;
+        }
+    
+        // Check if input = number
+        if(isNaN(from && to))
+        {
+            this.emit('error', message, 'NotANumber');
+            return;
+        }
+    
+        // Return error if user want to move song that is playing / user select an invalid songID
+        if(from === 0 || to >= queue.songs.length )
+        {
+            this.emit('error', message, 'invalidNumber');
+            return;
+        }
+
+        // Move up to bottom
+        if(from <= to){
+            
+            // Move song
+            queue.songs.splice(to, 0, queue.songs[from]);
+            
+            // Remove song from old place
+            queue.songs.splice(from, 1);
+        }
+        else // Move bottom to up
+        {
+            
+            // Move song
+            queue.songs.splice(to, 0, queue.songs[from]);
+            
+            // Remove song from old place
+            queue.songs.splice(from + 1, 1);
+        };
+
+        /**
+         * songMoved event.
+         * Return msg, queue, song moved queueID
+         * @event Player#songMoved
+         */
+        this.emit('songMoved', queue.initMessage, queue, to);
+        return queue;
+    }
+
+
+
+    /**
+     * Switch song queue position.
+     * @param {Discord.Message} message The Discord Message object.
+     * @param {Number} from song want to switch.
+     * @param {Number} to song will be replaced.
+     * @returns {song}
+     */
+    async switch(message, from, to) {
+        // Gets guild queue
+        let queue = this.queues.get(message.guild.id);
+        if (!queue)
+        {
+            this.emit('error', message, 'QueueIsNull');
+            return null;
+        }
+    
+        // Check if input = number
+        if(isNaN(from && to))
+        {
+            this.emit('error', message, 'NotANumber');
+            return;
+        }
+    
+        // Return error if user want to move song that is playing / user select an invalid songID
+        if(from === 0 || to >= queue.songs.length )
+        {
+            this.emit('error', message, 'invalidNumber');
+            return;
+        }
+    
+        if(to === 0) to = 1;
+    
+        // Create array from song want to moved
+        const songsMoved = [queue.songs[to], queue.songs[from]];
+    
+        // Move song
+        queue.songs.splice(to, 1, songsMoved[1]);
+        queue.songs.splice(from, 1, songsMoved[0]);
+
+        /**
+         * songSwitched event.
+         * Return msg, queue, song 'from' queueID, song 'to' queueID
+         * @event Player#songSwitched
+         */
+        this.emit('songSwitched', queue.initMessage, queue, to, from);
+        return queue;
+    }
+
+
+
+    /**
      * Adds a song to the Guild Queue.
      * @param {Discord.Message} message The Discord Message object.
      * @param {Partial<Util.PlayOptions>} options Search options.
@@ -626,7 +736,7 @@ class Player extends EventEmitter {
         let timeEnd = Util.TimeToMilliseconds(queue.songs[0].duration);
         options = Util.deserializeOptionsProgress(options);
 
-        return `${Util.buildBar(timePassed, timeEnd, options['size'], options['block'], options['arrow'])}`;
+        return `${Util.buildBar(timePassed, timeEnd, options['size'], options['block'], options['arrow'], options['embed'])}`;
     }
 
     /**

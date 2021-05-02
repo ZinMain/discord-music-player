@@ -1,5 +1,5 @@
 ﻿
-# Discord Music Player
+# Discord Music Player (ZIN Fork)
 
 **Note**: this module uses recent discordjs features and requires discord.js version 12.
 
@@ -8,6 +8,12 @@ Discord Player is a powerful [Node.js](https://nodejs.org) module that allows yo
 *This package was made by **Androz2091** and rewritten by **SushiBtw** using the MIT License Rules.*
 
 ### *We support NodeJS 12-15.*
+
+## **ZIN Edits:**
+- **Added move method (#move)**
+- **Added switch method (#switch)**
+- **Added new `embed` option for progress bar in embeds (#create-progress-bar)**
+
 
 ## **DMP v7.1.4 Update:**
 - **Fixed `PlayerOptions#leaveOnEmpty` option that fired up even if was set to `false`,**
@@ -127,6 +133,8 @@ To create a **Guild Queue**, use the **play()** command, then you are able to ma
 - **[toggleQueueLoop(GuildID)](#toggle-queue-loop)** - Toggle to repeat or not the full Queue indefinitely | Returning: `Boolean`
 ### Song Methods
 - **[seek(guildID, Milliseconds)](#seek)** - Seek to a current moment in a Song. | Returning: `Song`
+- **[move(guildID, From, To)](#movek)** - Move a Song. | Returning: `Queue`
+- **[switch(guildID, From, To)](#switch)** - Switch song queue position. | Returning: `Queue`
 - **[skip(GuildID)](#skip)** - Skip the current Song. | Returning: `Song`
 - **[remove(GuildID, SongID)](#remove)** - Remove a Song from the Queue. | Returning: `Song`
 - **[pause(GuildID)](#pause)** - Pause the current playing Song. | Returning: `Song`
@@ -137,7 +145,7 @@ To create a **Guild Queue**, use the **play()** command, then you are able to ma
 - **[toggleLoop(GuildID)](#toggle-loop)** - Toggle to repeat or not the current Song indefinitely | Returning: `Boolean`
 ### Other Methods
 - **[setVolume(GuildID, Volume)](#setvolume)** - Set Music Volume. | Returning: `Boolean (was action compleated)`
-- **[createProgressBar(GuildID, BarSize, ArrowIcon, LoadedIcon)](#create-progress-bar)** - Create a progress bar per current playing song. | Returning: `String`
+- **[createProgressBar(GuildID, BarSize, ArrowIcon, BarIcon, Embed)](#create-progress-bar)** - Create a progress bar per current playing song. | Returning: `String`
 
 
 ## Utils
@@ -171,6 +179,12 @@ client.player
     // Emitted when there was no more music to play.
     .on('queueEnd',  (message, queue) =>
         message.channel.send(`The queue ended, nothing more to play!`))
+    // Emitted when moved a song.
+    .on('songMoved',  (message, queue, songID) =>
+        message.channel.send(`${queue.song[songID]} moved to position ${songID}!`))
+    // Emitted when switch song queue position.
+    .on('songSwitched',  (message, queue, from, to) =>
+        message.channel.send(`${queue.songs[to]} switch place with ${queue.songs[from]}!`))
     // Emitted when a song changed.
     .on('songChanged', (message, newSong, oldSong) =>
         message.channel.send(`**${newSong.name}** is now playing!`))
@@ -256,7 +270,7 @@ client.on('message', async (message) => {
     // will play "All Summer Long" in the Voice Channel
 
     if(command === 'play'){
-        let song = await client.player.play(message, args.join(' '));
+        let song = await client.player.play(message, args[0].join(' '));
         
         // If there were no errors the Player#songAdd event will fire and the song will not be null.
         if(song)
@@ -267,7 +281,7 @@ client.on('message', async (message) => {
     // OR with the Options Object
     if(command === 'play'){
         let song = await client.player.play(message, {
-            search: args.join(' '),
+            search: args[0].join(' '),
             requestedBy: message.author.tag
         });
 
@@ -307,14 +321,14 @@ client.on('message', async (message) => {
 
     if(command === 'play'){
         if(client.player.isPlaying(message)) {
-            let song = await client.player.addToQueue(message, args.join(' '));
+            let song = await client.player.addToQueue(message, args[0].join(' '));
 
             // If there were no errors the Player#songAdd event will fire and the song will not be null.
             if(song)
                 console.log(`Added ${song.name} to the queue`);
             return;
         } else {
-            let song = await client.player.play(message, args.join(' '));
+            let song = await client.player.play(message, args[0].join(' '));
 
             // If there were no errors the Player#songAdd event will fire and the song will not be null.
             if(song)
@@ -345,7 +359,7 @@ client.on('message', async (message) => {
     if (command === 'playlist') {
         // If maxSongs is -1, will be infinite.
         await client.player.playlist(message, {
-            search: args.join(' '),
+            search: args[0].join(' '),
             maxSongs: 20
         });
 
@@ -410,11 +424,65 @@ client.on('message', async (message) => {
 
     if(command === 'seek'){
         // If provided 10 seconds, it would send the Milliseconds stamp (10 * 1000)
-        let song = await client.player.seek(message, parseInt(message.args[0] * 1000)).catch(err => {
+        let song = await client.player.seek(message, parseInt(args[0] * 1000)).catch(err => {
             return message.channel.send(error.message);
         });
         
-        message.channel.send(`Seeked to ${message.args[0]} second of ${song.name}.`);
+        message.channel.send(`Seeked to ${args[0]} second of ${song.name}.`);
+    }
+});
+```
+
+### Move
+Move a Song.
+
+**Usage:**
+```js
+client.player.move(Message, Song from, Song destination);
+```
+**Example:**
+```js
+client.player.on('songMoved',  (message, queue, songID) => message.channel.send(`${queue.song[songID]} moved to position ${songID}!`))
+
+client.on('message', async (message) => {
+    const args = message.content.slice(settings.prefix.length).trim().split(/ +/g);
+    const command = args.shift().toLowerCase();
+
+    if(command === 'move'){
+
+        let from = args[0]
+        let to = args[1]
+
+        bot.player.move(msg, from, to);
+        
+        return;
+    }
+});
+```
+
+### Switch
+Switch song queue position.
+
+**Usage:**
+```js
+client.player.switch(Message, Song from, Song switched);
+```
+**Example:**
+```js
+client.player.on('songSwitched',  (message, queue, from, to) => message.channel.send(`${queue.songs[to]} switch place with ${queue.songs[from]}!`))
+
+client.on('message', async (message) => {
+    const args = message.content.slice(settings.prefix.length).trim().split(/ +/g);
+    const command = args.shift().toLowerCase();
+
+    if(command === 'move'){
+
+        let from = args[0]
+        let to = args[1]
+
+        bot.player.switch(msg, from, to);
+        
+        return;
     }
 });
 ```
@@ -766,11 +834,13 @@ client.on('message', async (message) => {
         let progressBar = client.player.createProgressBar(message, {
             size: 15,
             block: '=',
-            arrow: '>'
+            arrow: '>',
+            embed: false //set to true if u want to use this for embed
         });
         if(progressBar)
             message.channel.send(progressBar);
         // Example: [==>                  ][00:25/04:07]
+        // Embed example: [==>=================][00:25/04:07]
     }
 });
 ```

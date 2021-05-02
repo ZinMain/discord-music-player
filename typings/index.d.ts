@@ -8,6 +8,8 @@ interface PlayerEvents {
     songAdd: [message: Message, queue: Queue, song: Song];
     playlistAdd: [message: Message, queue: Queue, playlist: Playlist];
     queueEnd: [message: Message, queue: Queue];
+    songMoved: [message: Message, queue: Queue, songID: Number];
+    songSwitched: [message: Message, queue: Queue, from: Number, to: Number];
     songChanged: [message: Message, newSong: Song, oldSong: Song];
     songFirst: [message: Message, song: Song];
     error: [error: String, message: Message];
@@ -32,6 +34,7 @@ type ProgressOptions = {
     size?: Number,
     arrow?: String,
     block?: String,
+    embed?: boolean
 }
 type PlayerOptions = {
     leaveOnEnd?: Boolean
@@ -55,6 +58,8 @@ class Player {
     play(message:Message, options:PlayOptions|String):Promise<Song>
     addToQueue(message:Message, options:PlayOptions|String):Promise<Song>
     seek(message:Message, seek:Number):Promise<Song>
+    move(message:Message, from:Number, to:Number):Queue
+    switch(message:Message, from:Number, to:Number):Queue
     playlist(message:Message, options:PlaylistOptions|String):Promise<Playlist>
     pause(message:Message):Song
     resume(message:Message):Song
