@@ -354,6 +354,7 @@ class Util {
      * @param {Number} size - The bar size (in letters)
      * @param {String} blockIcon - Block Icon
      * @param {String} arrowIcon - Arrow Icon
+     * @param (boolean) isEmbed - set to true if u want to use this for embed
      * @return {String} - Music Bar
      */
     static buildBar(value, maxValue, size, blockIcon, arrowIcon, isEmbed) {
@@ -362,11 +363,8 @@ class Util {
         const emptyProgress = size - progress;
 
         const progressText = blockIcon.repeat(progress) + arrowIcon;
-        if(isEmbed){
-            const emptyProgressText = blockIcon.repeat(emptyProgress);
-        } else {
-            const emptyProgressText = ' '.repeat(emptyProgress);
-        }
+        if(isEmbed) const emptyProgressText = blockIcon.repeat(emptyProgress);
+        else const emptyProgressText = ' '.repeat(emptyProgress);
 
         return `[${progressText}${emptyProgressText}][${this.MillisecondsToTime(value)}/${this.MillisecondsToTime(maxValue)}]`;
     };
