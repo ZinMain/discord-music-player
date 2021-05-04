@@ -109,14 +109,14 @@ class Util {
         index: null
     };
 
-    static PlaylistOptions = {
+    static PlaylistOptions =  {
         search: '',
         maxSongs: -1,
         requestedBy: null,
         shuffle: false,
     };
 
-    static ProgressOptions = {
+    static ProgressOptions =  {
         size: 20,
         arrow: '>',
         block: '=',
@@ -137,7 +137,7 @@ class Util {
             options = Object.assign({}, defaultSearchOptions, options);
             options = pick(options, Object.keys(defaultSearchOptions))
 
-            if (SpotifyRegex.test(search)) {
+            if(SpotifyRegex.test(search)) {
                 search = await this.songFromSpotify(search).catch(err => {
                     return reject(err);
                 });
@@ -247,10 +247,10 @@ class Util {
 
             let isSpotifyPlaylist = SpotifyPlaylistRegex.test(search);
             let isPlaylistLink = PlaylistRegex.test(search);
-            if (isSpotifyPlaylist) {
+            if(isSpotifyPlaylist) {
                 // Spotify Playlist
                 let playlist = await getData(search).catch(() => null);
-                if (!playlist || !['playlist', 'album'].includes(playlist['type'])) return reject('InvalidPlaylist');
+                if(!playlist || !['playlist', 'album'].includes(playlist['type'])) return reject('InvalidPlaylist');
                 playlist = {
                     title: playlist['name'],
                     channel: playlist['type'] === 'playlist' ? { name: playlist['owner']['display_name'] } : playlist['artists'][0],
@@ -262,7 +262,7 @@ class Util {
 
                 playlist.videos = await Promise.all(playlist.videos.map(async (track, index) => {
                     if (max !== -1 && index >= max) return null;
-                    if (playlist['type'] === 'playlist')
+                    if(playlist['type'] === 'playlist')
                         track = track['track'];
                     return await this.getVideoBySearch(`${track['artists'][0].name} - ${track['name']}`, {}, queue, requestedBy).catch(() => null);
                 }));
@@ -272,7 +272,7 @@ class Util {
 
                 return resolve(new Playlist(playlist, queue, requestedBy));
 
-            } else if (isPlaylistLink) {
+            } else if(isPlaylistLink) {
                 // YouTube Playlist
                 let PlaylistID = playlist_parser(search);
                 if (!PlaylistID) return reject('InvalidPlaylist');
@@ -311,7 +311,7 @@ class Util {
                 let SpotifyResult = await getPreview(query);
                 resolve(`${SpotifyResult['artist']} - ${SpotifyResult['title']}`);
             }
-            catch (err) {
+            catch(err) {
                 reject('InvalidSpotify');
             }
         });
@@ -327,9 +327,9 @@ class Util {
         const minutes = Math.floor(ms / 60000 % 60);
         const hours = Math.floor(ms / 3600000);
 
-        const secondsT = `${seconds}`.padStart(2, '0');
-        const minutesT = `${minutes}`.padStart(2, '0');
-        const hoursT = `${hours}`.padStart(2, '0');
+        const secondsT = `${seconds}`.padStart(2,'0');
+        const minutesT = `${minutes}`.padStart(2,'0');
+        const hoursT = `${hours}`.padStart(2,'0');
 
         return `${hours ? `${hoursT}:` : ''}${minutesT}:${secondsT}`;
     }
@@ -342,7 +342,7 @@ class Util {
     static TimeToMilliseconds(time) {
         const items = time.split(':');
         return items.reduceRight(
-            (prev, curr, i, arr) => prev + parseInt(curr) * 60 ** (arr.length - 1 - i),
+            (prev,curr,i,arr) => prev + parseInt(curr) * 60**(arr.length-1-i),
             0
         ) * 1000;
     }
@@ -363,7 +363,7 @@ class Util {
         const emptyProgress = size - progress;
 
         const progressText = blockIcon.repeat(progress) + arrowIcon;
-        if (isEmbed) {
+        if(isEmbed) {
             const emptyProgressText = blockIcon.repeat(emptyProgress);
             return `[${progressText}${emptyProgressText}][${this.MillisecondsToTime(value)}/${this.MillisecondsToTime(maxValue)}]`;
         } else {
@@ -377,7 +377,7 @@ class Util {
      * @returns {PlayerOptions|Partial<PlayerOptions>}
      */
     static deserializeOptionsPlayer(options) {
-        if (options && typeof options === 'object')
+        if(options && typeof options === 'object')
             return Object.assign({}, this.PlayerOptions, options);
         else return this.PlayerOptions;
     }
@@ -387,9 +387,9 @@ class Util {
      * @returns {Partial<PlayOptions>}
      */
     static deserializeOptionsPlay(options) {
-        if (options && typeof options === 'object')
+        if(options && typeof options === 'object')
             return Object.assign({}, this.PlayOptions, options);
-        else if (typeof options === 'string')
+        else if(typeof options === 'string')
             return Object.assign({}, this.PlayOptions, { search: options });
         else return this.PlayOptions;
     }
@@ -399,9 +399,9 @@ class Util {
      * @returns {Partial<PlayOptions>}
      */
     static deserializeOptionsPlaylist(options) {
-        if (options && typeof options === 'object')
+        if(options && typeof options === 'object')
             return Object.assign({}, this.PlaylistOptions, options);
-        else if (typeof options === 'string')
+        else if(typeof options === 'string')
             return Object.assign({}, this.PlaylistOptions, { search: options });
         else return this.PlaylistOptions;
     }
@@ -411,7 +411,7 @@ class Util {
      * @returns {Partial<ProgressOptions>}
      */
     static deserializeOptionsProgress(options) {
-        if (options && typeof options === 'object')
+        if(options && typeof options === 'object')
             return Object.assign({}, this.ProgressOptions, options);
         else return this.ProgressOptions;
     }
@@ -421,7 +421,7 @@ class Util {
      * @return {Boolean}
      */
     static isVoice(voice) {
-        if (voice.constructor.name !== Discord.VoiceState.name)
+        if(voice.constructor.name !== Discord.VoiceState.name)
             return false;
         return voice.channel ? voice.channel.constructor.name === 'VoiceChannel' || voice.channel.constructor.name === 'StageChannel' : false;
     }
@@ -431,10 +431,10 @@ class Util {
      * @return {Array}
      */
     static shuffle(array) {
-        if (!Array.isArray(array)) return [];
+        if(!Array.isArray(array)) return [];
         const clone = [...array];
         const shuffled = [];
-        while (clone.length > 0)
+        while(clone.length > 0) 
             shuffled.push(
                 clone.splice(
                     Math.floor(
