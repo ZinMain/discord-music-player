@@ -100,11 +100,7 @@ class Player extends EventEmitter {
              * @property {Queue} queue
              * @property {Song} song
              */
-            if (options.interaction) {
-                this.emit('songAdd', queue.initMessage, queue, song, options.interaction);
-            } else {
-                this.emit('songAdd', queue.initMessage, queue, song);
-            }
+            this.emit('songAdd', queue.initMessage, queue, song);
             // Plays the song
             await this._playSong(_voiceState.guild.id, true);
 
